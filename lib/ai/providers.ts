@@ -12,6 +12,21 @@ import {
   titleModel,
 } from './models.test';
 
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
+import { createOpenAI } from '@ai-sdk/openai';
+
+const openai = createOpenAICompatible({
+  apiKey: "test",
+  baseURL: "https://text.pollinations.ai/openai",
+  name: 'openai',
+});
+
+const searchgpt = createOpenAI({
+  apiKey: "test",
+  baseURL: "https://text.pollinations.ai/openai",
+  name: 'azure-openai',
+});
+
 export const myProvider = isTestEnvironment
   ? customProvider({
       languageModels: {
@@ -23,13 +38,14 @@ export const myProvider = isTestEnvironment
     })
   : customProvider({
       languageModels: {
-        'chat-model': xai('grok-2-vision-1212'),
+        'chat-model': openai('openai'),
+        'search-model': searchgpt('searchgpt'),
         'chat-model-reasoning': wrapLanguageModel({
-          model: xai('grok-3-mini-beta'),
+          model: openai('deepseek-reasoning'),
           middleware: extractReasoningMiddleware({ tagName: 'think' }),
         }),
-        'title-model': xai('grok-2-1212'),
-        'artifact-model': xai('grok-2-1212'),
+        'title-model': openai('openai'),
+        'artifact-model': openai('openai'),
       },
       imageModels: {
         'small-model': xai.image('grok-2-image'),

@@ -19,6 +19,7 @@ import { MessageEditor } from './message-editor';
 import { DocumentPreview } from './document-preview';
 import { MessageReasoning } from './message-reasoning';
 import type { UseChatHelpers } from '@ai-sdk/react';
+import { Brain } from 'lucide-react';
 
 const PurePreviewMessage = ({
   chatId,
@@ -62,7 +63,7 @@ const PurePreviewMessage = ({
           {message.role === 'assistant' && (
             <div className="size-8 flex items-center rounded-full justify-center ring-1 shrink-0 ring-border bg-background">
               <div className="translate-y-px">
-                <SparklesIcon size={14} />
+                <Brain size={14} />
               </div>
             </div>
           )}
@@ -164,11 +165,13 @@ const PurePreviewMessage = ({
                     <div
                       key={toolCallId}
                       className={cx({
-                        skeleton: ['getWeather'].includes(toolName),
+                        skeleton: ['getWeather', 'youtubeTranscription'].includes(toolName),
                       })}
                     >
                       {toolName === 'getWeather' ? (
-                        <Weather />
+                        <>Getting weather</>
+                      ) : toolName === 'youtubeTranscription' ? (
+                        <>Getting transcription</>
                       ) : toolName === 'createDocument' ? (
                         <DocumentPreview isReadonly={isReadonly} args={args} />
                       ) : toolName === 'updateDocument' ? (
@@ -194,7 +197,9 @@ const PurePreviewMessage = ({
                   return (
                     <div key={toolCallId}>
                       {toolName === 'getWeather' ? (
-                        <Weather weatherAtLocation={result} />
+                        <Weather data={result} />
+                      ) : toolName === 'youtubeTranscription' ? (
+                        <iframe src={result?.embedLink} width="100%" className='aspect-video max-h-[216px] rounded-lg max-w-[384px]' height="100%" allowFullScreen></iframe>
                       ) : toolName === 'createDocument' ? (
                         <DocumentPreview
                           isReadonly={isReadonly}

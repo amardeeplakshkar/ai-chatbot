@@ -1,18 +1,35 @@
-import { tool } from 'ai';
+import { tool as createTool } from 'ai';
 import { z } from 'zod';
+import { WeatherClient } from '@agentic/weather'
+export const getWeather = createTool({
+    description: 'Get the weather for a location',
+    parameters: z.object({
+        location: z.string().describe('The location to get the weather for'),
+    }),
+    execute: async function ({ location }) {
+        try {
+            const cleanedLocation = location.trim().toLowerCase()
+            const weather = new WeatherClient()
+            const res = await weather.getCurrentWeather(cleanedLocation)
 
-export const getWeather = tool({
-  description: 'Get the current weather at a location',
-  parameters: z.object({
-    latitude: z.number(),
-    longitude: z.number(),
-  }),
-  execute: async ({ latitude, longitude }) => {
-    const response = await fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m&hourly=temperature_2m&daily=sunrise,sunset&timezone=auto`,
-    );
+            if (!res || !res.current || !res.location) {
+                return { error: 'Sorry, we don’t have weather data for that location.' }
+            }
 
-    const weatherData = await response.json();
-    return weatherData;
-  },
-});
+            return res;
+
+        } catch (err: any) {
+            const status = err?.response?.status || err?.status
+
+            if (status === 400) {
+                return {
+                    error: `Sorry, we don’t have weather data for "${location}".`,
+                }
+            }
+
+            return {
+                error: `Something went wrong while fetching weather for "${location}". Please try again later.`,
+            }
+        }
+    },
+})

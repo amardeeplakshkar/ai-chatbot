@@ -36,6 +36,7 @@ import { after } from 'next/server';
 import type { Chat } from '@/lib/db/schema';
 import { differenceInSeconds } from 'date-fns';
 import { ChatSDKError } from '@/lib/errors';
+import { youtubeTranscription } from '@/lib/ai/tools/youtube-transcriptions';
 
 export const maxDuration = 60;
 
@@ -152,10 +153,11 @@ export async function POST(request: Request) {
           messages,
           maxSteps: 5,
           experimental_activeTools:
-            selectedChatModel === 'chat-model-reasoning'
+            selectedChatModel === 'chat-model-reasoning' || selectedChatModel === 'search-model'
               ? []
               : [
                   'getWeather',
+                  'youtubeTranscription',
                   'createDocument',
                   'updateDocument',
                   'requestSuggestions',
@@ -164,6 +166,7 @@ export async function POST(request: Request) {
           experimental_generateMessageId: generateUUID,
           tools: {
             getWeather,
+            youtubeTranscription,
             createDocument: createDocument({ session, dataStream }),
             updateDocument: updateDocument({ session, dataStream }),
             requestSuggestions: requestSuggestions({
